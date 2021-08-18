@@ -1,5 +1,8 @@
 ﻿using Network;
 using Newtonsoft.Json;
+using Oxide.Core;
+using Oxide.Core.Libraries.Covalence;
+using Oxide.Game.Rust.Cui;
 using Rust;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +14,8 @@ namespace Oxide.Plugins
     [Description("Prevents players without permission from suiciding")]
     public class AntiSuicide : CovalencePlugin
     {
+        static AntiSuicide suicide;
+
         // Config based off of Vanish oxide plugin
         #region Configuration
         private static readonly DamageTypeList _EmptyDmgList = new DamageTypeList();
@@ -65,6 +70,8 @@ namespace Oxide.Plugins
 
         private void Init()
         {
+            suicide = this;
+
             // Register permissions for commands
             permission.RegisterPermission(suicideAllow, this);
 
@@ -75,15 +82,19 @@ namespace Oxide.Plugins
 
         private object OnEntityTakeDamage(BaseCombatEntity entity, HitInfo info)
         {
+            if (entity == null || info == null) return null;
+
             var attacker = info?.InitiatorPlayer;
             var victim = entity?.ToPlayer();
 
+            if (attacker == null || victim == null) return null;
+
             // If you are killing yourself
-            if (victim != attacker) return null;
+            if (victim.UserIDString != attacker.UserIDString) return null;
             if (HasPerm(victim.UserIDString, suicideAllow))
             {
                 if (config.AnnounceSuicide)
-                    covalence.Server.Command($"say {victim.UserIDString} has made the horrible choice of killing themselves. Everyone is disapointed and they have only suceeded in passing on the pain.");
+                    covalence.Server.Command($"say {victim.displayName} has made the horrible choice of killing themselves. Everyone is disapointed and they have only suceeded in passing on the pain.");
                 return null;
             }
 
