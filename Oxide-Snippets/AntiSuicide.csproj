@@ -143,9 +143,6 @@
     <Reference Include="NewAssembly">
       <HintPath>F:\Apps\rustdedicated\RustDedicated_Data\Managed\NewAssembly.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>F:\Apps\rustdedicated\RustDedicated_Data\Managed\Newtonsoft.Json.dll</HintPath>
-    </Reference>
     <Reference Include="Novell.Directory.Ldap">
       <HintPath>F:\Apps\rustdedicated\RustDedicated_Data\Managed\Novell.Directory.Ldap.dll</HintPath>
     </Reference>
@@ -341,9 +338,6 @@
     </Reference>
     <Reference Include="UnityEngine.InputModule">
       <HintPath>F:\Apps\rustdedicated\RustDedicated_Data\Managed\UnityEngine.InputModule.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.JSONSerializeModule">
-      <HintPath>F:\Apps\rustdedicated\RustDedicated_Data\Managed\UnityEngine.JSONSerializeModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.LocalizationModule">
       <HintPath>F:\Apps\rustdedicated\RustDedicated_Data\Managed\UnityEngine.LocalizationModule.dll</HintPath>

@@ -1,0 +1,1 @@
+xcopy /s /y "E:\Dev Projects\repos\Oxide-Snippets\Oxide-Snippets\*.cs" F:\Apps\rustdedicated\oxide\plugins\

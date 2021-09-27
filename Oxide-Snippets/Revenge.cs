@@ -11,13 +11,15 @@ using UnityEngine.SceneManagement;
 
 namespace Oxide.Plugins
 {
-    [Info("OutPost Revenge", "Sharkgamedev", "0.8.1")]
+    [Info("OutPost Revenge", "Sharkgamedev", "0.9.1")]
     [Description("Sends sceientists to the bases of any player that attacks a safe zone.")]
     public class Revenge : CovalencePlugin
     {
         static Revenge revenge;
         private const string _tcPrefab = "cupboard.tool.deployed";
-        private const string _scientistPrefab = "assets/prefabs/npc/murderer/murderer.prefab";
+        private const string _scientistPrefab = "assets/prefabs/npc/scientist/scientist.prefab";
+
+        private float _lastRaidingParty;
 
         private List<BaseEntity> _tcList = new List<BaseEntity>();
 
@@ -28,7 +30,7 @@ namespace Oxide.Plugins
 
         public class Configuration
         {
-            [JsonProperty("Send scientists to every base the user has privalege on or the first one.")]
+            [JsonProperty("Send scientists to every base the user has privelage on or the first one.")]
             public bool RevengeMultiple = true;
 
             [JsonProperty("Number of scientists to send to each base.")]
@@ -89,27 +91,25 @@ namespace Oxide.Plugins
 
             if (attacker == null || victim == null) return null;
 
-            // If you are attacking an npc
-            if (!(victim is NPCPlayer)) return null;
-
-            covalence.Server.Command($"say {attacker.displayName} has attacked a scientist.");
-            if (!victim.InSafeZone()) return null;
-            covalence.Server.Command($"say {attacker.displayName} has attacked a scientist in a safe zone.");
+            // If you are attacked by npc
+            if (!(attacker is NPCPlayer)) return null;
+            if (!attacker.InSafeZone()) return null;
+            if (Time.time < _lastRaidingParty) return null;
 
             UpdateTCList();
 
-            BaseEntity _attackerTcb = GetTCOfPlayer(attacker);
-            if (_attackerTcb == null) return null;
+            BaseEntity _victimTcb = GetTCOfPlayer(victim);
+            if (_victimTcb == null) return null;
+
+            _lastRaidingParty = Time.time + 300.0f;
 
             for (int i = 0; i < config.RevengePartySize; i++)
             {
-                NPCPlayer t_ent = (NPCPlayer)InstantiateSci(TryGetSpawn(_attackerTcb.ServerPosition, 50), _attackerTcb.ServerRotation);
+                NPCPlayer t_ent = (NPCPlayer)InstantiateSci(TryGetSpawn(_victimTcb.ServerPosition, 50), _victimTcb.ServerRotation);
                 var _npc = t_ent.GetComponent<NPCPlayerApex>();
                 _npc.Spawn();
 
-                covalence.Server.Command($"say scientist headed to{TryGetSpawn(_attackerTcb.ServerPosition, 50)} to do some murderin.");
-
-                _npc.AttackTarget = _attackerTcb;
+                _npc.AttackTarget = _victimTcb;
             }
             
             return null;
@@ -125,14 +125,21 @@ namespace Oxide.Plugins
         private BaseEntity GetTCOfPlayer(BasePlayer player)
         {
             foreach (var _tc in _tcList)
-            {
-                covalence.Server.Command($"say these two should be equal: {player.UserIDString} and {_tc.OwnerID} has attacked a scientist.");
-
                 if (_tc.OwnerID == player.userID)
                     return _tc;
-            }
 
             return null;
+        }
+
+        private List<BaseEntity> GetAllTCOfPlayer(BasePlayer player)
+        {
+            List<BaseEntity> _playerTc = new List<BaseEntity>();
+
+            foreach (var _tc in _tcList)
+                if (_tc.OwnerID == player.userID)
+                    _playerTc.Add(_tc);
+
+            return (_playerTc.Count > 0 ? _playerTc : null);
         }
 
         private BaseEntity InstantiateSci(Vector3 position, Quaternion rotation)
